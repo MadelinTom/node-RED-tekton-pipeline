@@ -1,0 +1,70 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: node-red-example-pipeline
+spec:
+  params:
+    - description: the name of the app
+      name: app-name
+      type: string
+    - description: the name of repo
+      name: image-repo
+      type: string
+    - description: the ssh url of the source code repo
+      name: source-repo
+      type: string
+  tasks:
+    - name: clone-repository
+      params:
+        - name: url
+          value: $(params.source-repo)
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: node-red-example-pipeline-storage
+    - name: build
+      params:
+        - name: IMAGE
+          value: "$(params.image-repo):$(tasks.clone-repository.results.commit)"
+      runAfter:
+        - clone-repository
+      taskRef:
+        kind: Task
+        name: create-image
+      workspaces:
+        - name: source
+          workspace: node-red-example-pipeline-storage
+    - name: kustomize-build
+      params:
+        - name: app-name
+          value: $(params.app-name)
+        - name: app-namespace
+          value: $(context.pipelineRun.namespace)
+        - name: image-with-tag
+          value: "$(params.image-repo):$(tasks.clone-repository.results.commit)"
+      runAfter:
+        - build
+      taskRef:
+        kind: Task
+        name: kustomize-build
+      workspaces:
+        - name: source
+          workspace: node-red-example-pipeline-storage
+    - name: deploy-app
+      params:
+        - name: app-name
+          value: $(params.app-name)
+        - name: app-namespace
+          value: $(context.pipelineRun.namespace)
+      runAfter:
+        - kustomize-build
+      taskRef:
+        kind: Task
+        name: deploy-app
+      workspaces:
+        - name: source
+          workspace: node-red-example-pipeline-storage
+  workspaces:
+    - name: node-red-example-pipeline-storage

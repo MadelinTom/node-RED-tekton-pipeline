@@ -1,0 +1,41 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy-app
+spec:
+  params:
+    - description: namespace for the deployment
+      name: app-namespace
+      type: string
+    - description: the name of the app
+      name: app-name
+      type: string
+  results:
+    - description: ""
+      name: service-port
+    - description: ""
+      name: resource-type
+  steps:
+    - image: "quay.io/upslopeio/kubectl:latest"
+      name: deploy
+      resources: {}
+      script: >
+        #!/bin/sh
+
+        cd source
+
+        set -e
+
+        APP_NAMESPACE="$(params.app-namespace)"
+
+        # echo "Deleting existing deployment"
+
+        echo -e "Deploying into: ${APP_NAMESPACE}"
+
+        kubectl apply -n ${APP_NAMESPACE} -f ./k8s/manifests.yaml
+        --validate=false > results.out
+
+        cat results.out
+  workspaces:
+    - description: contains the cloned git repo
+      name: source

@@ -1,0 +1,32 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: node-red-example
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-red-example
+  template:
+    metadata:
+      labels:
+        app: node-red-example
+    spec:
+      containers:
+        - name: node-red-example
+          image: <YOUR-IMAGE-REPO> # Add your image repo here
+          imagePullPolicy: Always
+          restartPolicy: Always
+          ports:
+            - name: http
+              containerPort: 1880
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http

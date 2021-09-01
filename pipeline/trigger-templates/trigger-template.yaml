@@ -1,0 +1,33 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: node-red-example-template
+spec:
+  params:
+    - name: source-git-url
+    - name: source-repo-name
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        name: node-red-example-template-$(tt.params.source-repo-name)-$(uid)
+      spec:
+        params:
+          - name: app-name
+            value: $(tt.params.source-repo-name)
+          - name: source-repo
+            value: $(tt.params.source-git-url)
+          - name: image-repo
+            value: uk.icr.io/node-red-example-dev/$(tt.params.source-repo-name)
+        pipelineRef:
+          name: back-stock-backend-pipeline
+        serviceAccountName: pipeline
+        workspaces:
+          - name: node-red-example-pipeline-storage
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi

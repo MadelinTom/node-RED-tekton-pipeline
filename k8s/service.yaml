@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: node-red-example
+    app.kubernetes.io/instance: node-red-example-instance
+    app.kubernetes.io/name: node-red-example
+  name: node-red-example
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 1880
+  selector:
+    app.kubernetes.io/instance: node-red-example-instance
+    app.kubernetes.io/name: node-red-example
+  sessionAffinity: None
+  type: ClusterIP

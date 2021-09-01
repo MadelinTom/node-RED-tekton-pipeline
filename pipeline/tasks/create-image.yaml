@@ -1,0 +1,37 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: create-image
+spec:
+  params:
+    - default: .
+      description: "The path to the build context, used by Kaniko - within the workspace"
+      name: pathToContext
+      type: string
+    - default: ./Dockerfile
+      description: The path to the dockerfile to build (relative to the context)
+      name: pathToDockerFile
+      type: string
+    - description: Url of image repository
+      name: IMAGE
+      type: string
+  steps:
+    - args:
+        - "--dockerfile=$(inputs.params.pathToDockerFile)"
+        - "--destination=$(inputs.params.IMAGE)"
+        - "--context=$(inputs.params.pathToContext)"
+        - "--snapshotMode=redo"
+      command:
+        - /kaniko/executor
+      env:
+        - name: DOCKER_CONFIG
+          value: /tekton/home/.docker/
+      image: "gcr.io/kaniko-project/executor:v1.6.0"
+      name: build-and-push
+      resources: {}
+      securityContext:
+        runAsUser: 0
+      workingDir: /workspace/source
+  workspaces:
+    - description: contains the cloned git repo
+      name: source
