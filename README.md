@@ -17,13 +17,13 @@ This Tekton strategy contains 4 tasks:
 
 The Dockerfile assumes you are saving your flows.json data to the root of the project folder. You should not rename or move this file.
 
-## Step 1 Prerequisites
+## Step 1: Prerequisites
 - Change app name and namespace values in the `k8s` folder: `deployment.yaml`, `route.yaml` and `service.yaml`
 - Change image repo in `deployment.yaml`
 - Change the app name and namespace values in all resources from the `pipeline` folder
 
 
-## Step 2 Prerequisites: OCP / Kubernetes 
+## Step 2: OCP / Kubernetes Prerequisites
 - Add your Github secret:
 
 ```yaml
@@ -68,12 +68,12 @@ oc get secret all-icr-io -n default -o yaml \
 oc patch -n <my_namespace> serviceaccount/default --type='json' -p='[{"op":"add","path":"/imagePullSecrets/-","value":{"name":"all-icr-io"}}]'
 ```
 
-## Deploying pipelines
+## Step 3: Deploying pipelines
 From the `pipeline` folder:
 - Deploy all resources within `tasks` and `trigger-bindings` folders first
 - Deploy resources inside `trigger-templates`, `pipelines` and `event-listeners` folders
 
-## Webhooks setup
+## Step 4: Webhooks setup
 
 - Make sure that the event listener services are exposed:
 ```bash
